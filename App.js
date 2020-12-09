@@ -1,21 +1,43 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { AppLoading } from 'expo';
+import * as Font from 'expo-font';
+import { Ionicons } from '@expo/vector-icons';
+import reducer from "./reducers";
+import {createStore,applyMiddleware,compose} from "redux";
+import reduxThunk from "redux-thunk";
+import {Provider} from "react-redux";
+import Routes from "./routes/routes";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store=createStore(reducer,{},composeEnhancers(applyMiddleware(reduxThunk)));
+
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isReady: false,
+    };
+  }
+
+  async componentDidMount() {
+    await Font.loadAsync({
+      Roboto: require('native-base/Fonts/Roboto.ttf'),
+      Roboto_medium: require('native-base/Fonts/Roboto_medium.ttf'),
+      ...Ionicons.font,
+    });
+    this.setState({ isReady: true });
+  }
+
+  render() {
+    if (!this.state.isReady) {
+      return <AppLoading />;
+    }
+
+    return (
+      <Provider store={store}>
+      <Routes/>
+      </Provider>
+    );
+  }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
